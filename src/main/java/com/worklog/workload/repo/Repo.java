@@ -28,6 +28,7 @@ public class Repo {
     @NotBlank
     private final String cloneUrl;
 
+
     public Repo(@JsonProperty("repository_id") int repositoryId,
                 @JsonProperty("project_id") int projectId,
                 @JsonProperty("branch") String branch,
