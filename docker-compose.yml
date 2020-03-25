@@ -1,0 +1,27 @@
+version: '3.5'
+services:
+services  server:
+    build: .
+    ports:
+      - "8080:8080"
+  database:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: worklog
+      PGDATA: /data/postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - test-pg-db:/data/postgres
+    networks:
+      - postgres
+
+
+networks:
+  postgres:
+    driver: bridge
+volumes:
+  test-pg-db:
+
