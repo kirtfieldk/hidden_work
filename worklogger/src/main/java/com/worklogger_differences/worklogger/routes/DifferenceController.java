@@ -27,6 +27,10 @@ public class DifferenceController {
     public List<DifferenceTable> fetchAllDifference(){
         return dbService.fetchAllDifferences();
     }
+
+    //Create multiple difference object between the two files
+    //and displays an arrayList through ResponseMessage
+    //Also it saves the difference into the db
     @GetMapping("/{fileOne}/{fileTwo}")
     public ReturnMessage differenceBetweenTwoFiles(@PathVariable("fileOne") FileContentTable fileOne,
                                                    @PathVariable("fileTwo") FileContentTable fileTwo){
@@ -37,6 +41,8 @@ public class DifferenceController {
         }catch (CompareDifferentFilesException e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Files are not historically the same", e);
         }
-
         }
+
+
+
 }

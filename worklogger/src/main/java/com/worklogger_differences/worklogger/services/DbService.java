@@ -2,6 +2,7 @@ package com.worklogger_differences.worklogger.services;
 
 import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
+import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.repository.DifferenceRepository;
 import com.worklogger_differences.worklogger.repository.FileContentRepository;
 import com.worklogger_differences.worklogger.repository.FileRepository;
@@ -57,7 +58,7 @@ public class DbService implements DbManipluationInterface{
         else
             throw new FileNotFoundInDbException("File Contents not found in DB with id:" + id);
     }
-// TODO when a file is longer than another than add the excess to the dif
+
     @Override
     public List<String> findDifferenceBetweenTwoFiles
     (FileContentTable one, FileContentTable two) throws CompareDifferentFilesException {
@@ -67,12 +68,19 @@ public class DbService implements DbManipluationInterface{
         String[] fileOneLines = one.getContent().split("\n");
         String[] fileTwoLines = two.getContent().split("\n");
         int minLength = fileOneLines.length;
+        String[] maxSizeArray = fileTwoLines.clone();
         if (minLength > fileTwoLines.length)
+            maxSizeArray = fileOneLines.clone();
             minLength = fileTwoLines.length;
+        //This adds the difference between files//
         for(int i = 0; i < minLength; i++){
             if(!fileOneLines[i].trim().equals(fileTwoLines[i].trim()) && fileOneLines.length != 0){
                 returnString.add(fileOneLines[i]);
             }
+        }
+        //This add the excess of the larger file//
+        for(int j = minLength; j < maxSizeArray.length; j++){
+            returnString.add(maxSizeArray[j]);
         }
         return returnString;
 
@@ -84,11 +92,8 @@ public class DbService implements DbManipluationInterface{
         if(!one.getFileId().equals(two.getFileId()))
             throw new CompareDifferentFilesException("Files are not historically the same");
         ////////////////////////////////////////////////////////
-        if(one.getFileId().equals(two.getFileId()))
-            return new ReturnMessage("Difference between files", 202,
-                    findDifferenceBetweenTwoFiles(one,two)
-                    );
-        return new ReturnMessage("Files are not the same", 400);
+        return new ReturnMessage("Difference between files", 202,
+                    findDifferenceBetweenTwoFiles(one,two));
     }
 
     @Override
@@ -99,23 +104,29 @@ public class DbService implements DbManipluationInterface{
         temp.setDifferences(dif);
         temp.setFileId(fileOne.getFileId());
         temp.setGroupId(2);
+        differenceRepository.save(temp);
         return temp;
     }
 
     @Override
-    public ReturnMessage saveFileToDb(FilesTable file) {
+    public ReturnMessage saveFileToDb(FilesTable file) throws MissingParamsException {
+        if(file.getFileName().equals(null) || file.getId().equals(null) || file.getProject().equals(null)
+            || file.getRepository().equals(null))
+            throw new MissingParamsException("Invalid File Object");
         fileRepository.save(file);
         return new ReturnMessage("Added: " +file.getFileName(), 202);
     }
 
     @Override
-    public ReturnMessage saveFileContentToDb(FileContentTable fileContent) {
+    public ReturnMessage saveFileContentToDb(FileContentTable fileContent) throws MissingParamsException{
+        if(fileContent.getFileId().equals(null) || fileContent.getContent().equals(null))
+            throw new MissingParamsException("Invalid FileContent Object");
         fileContentRepository.save(fileContent);
         return new ReturnMessage("Added: " +fileContent.getFileId(), 202);
     }
 
     @Override
-    public ReturnMessage saveDiffToDb(DifferenceTable dif) {
+    public ReturnMessage saveDiffToDb(DifferenceTable dif){
         differenceRepository.save(dif);
         return new ReturnMessage("Diff noted: " + dif.getFileId(), 202);
     }

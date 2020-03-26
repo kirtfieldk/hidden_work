@@ -2,6 +2,7 @@ package com.worklogger_differences.worklogger.services;
 
 import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
+import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.tables.DifferenceTable;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
@@ -26,9 +27,11 @@ public interface DbManipluationInterface {
     ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
             throws CompareDifferentFilesException;
     DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif);
-    ReturnMessage saveFileToDb(FilesTable file);
-    ReturnMessage saveFileContentToDb(FileContentTable fileContent);
-    ReturnMessage saveDiffToDb(DifferenceTable dif);
+    ReturnMessage saveFileToDb(FilesTable file)
+            throws MissingParamsException;
+    ReturnMessage saveFileContentToDb(FileContentTable fileContent)
+            throws MissingParamsException;
+    ReturnMessage saveDiffToDb(DifferenceTable diff);
     Boolean fileInDb(String fileId);
     Boolean fileContentInDb(long id);
 /*

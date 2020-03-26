@@ -1,6 +1,8 @@
 package com.worklogger_differences.worklogger.routes;
 
+import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
+import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
@@ -27,7 +29,7 @@ public class FileController {
             FileContentTable fileOne = dbService.fetchFileContentById(fileIdOne);
             FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
             return dbService.findDifferenceBetweenTwoFiles(fileOne, fileTwo);
-        }catch(FileNotFoundInDbException e){
+        }catch(FileNotFoundInDbException | CompareDifferentFilesException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Id not in db", e);
         }
 
@@ -37,10 +39,14 @@ public class FileController {
  */
     @PostMapping
     public ReturnMessage addFileToDb(@RequestBody FilesTable file){
-        if(!dbService.fileInDb(file.getId()))
-            return dbService.saveFileToDb(file);
-        return new ReturnMessage("File already in db", 404);
-    }
+        try {
+            if (!dbService.fileInDb(file.getId()))
+                return dbService.saveFileToDb(file);
+            return new ReturnMessage("File already in db", 404);
+        }catch (MissingParamsException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid File object", e);
+        }
+        }
     /*
         Fetch All files
      */
