@@ -15,7 +15,7 @@ public class FileController {
     @Autowired
     private final DbService dbService;
     public FileController(DbService dbService){
-        this.dbService= dbService;
+        this.dbService=dbService;
     }
     @GetMapping("{fileIdOne}/{fileIdTwo}")
     public List<String> getDif(@PathVariable("fileIdOne") int fileIdOne,
@@ -24,12 +24,21 @@ public class FileController {
         FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
         return dbService.findDifferenceBetweenTwoFiles(fileOne, fileTwo);
     }
-
+/*
+    Adds file to table
+ */
     @PostMapping
     public ReturnMessage addFileToDb(@RequestBody FilesTable file){
-        if(dbService.fileInDb(file.getId()))
+        if(!dbService.fileInDb(file.getId()))
             return dbService.saveFileToDb(file);
         return new ReturnMessage("File already in db", 404);
+    }
+    /*
+        Fetch All files
+     */
+    @GetMapping
+    public List<FilesTable> fetchAllFiles(){
+        return dbService.fetchAllFiles();
     }
 
 

@@ -54,7 +54,7 @@ public class DbService implements DbManipluationInterface{
             return file.get(0);
         return null;
     }
-
+// TODO when a file is longer than another than add the excess to the dif
     @Override
     public List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two) {
         List<String> returnString = new ArrayList<String>();
@@ -69,6 +69,14 @@ public class DbService implements DbManipluationInterface{
             }
         }
         return returnString;
+    }
+    @Override
+    public ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two){
+        if(one.getFileId().equals(two.getFileId()))
+            return new ReturnMessage("Difference between files", 202,
+                    findDifferenceBetweenTwoFiles(one,two)
+                    );
+        return new ReturnMessage("Files are not the same", 400);
     }
 
     @Override
@@ -99,6 +107,6 @@ public class DbService implements DbManipluationInterface{
     public Boolean fileInDb(String fileId) {
         String stm = "SELECT * FROM files WHERE file_id='"+fileId+"';";
         List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
-        return files.isEmpty();
+        return !files.isEmpty();
     }
 }

@@ -26,6 +26,7 @@ public class DifferenceTable {
     private final String differences;
     @Column(name="group_id")
     private final int groupId;
+
     public DifferenceTable(){
         this.contentOne=-1;
         this.contentTwo=-2;
@@ -48,6 +49,8 @@ public class DifferenceTable {
         this.contentOne=contentOne;
         this.differences=differences;
     }
+
+
 
     public int getId() {
         return id;

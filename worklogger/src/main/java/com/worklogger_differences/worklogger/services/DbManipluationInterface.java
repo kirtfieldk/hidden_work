@@ -16,6 +16,7 @@ public interface DbManipluationInterface {
     List<FilesTable> fetchAllFiles();
     FileContentTable fetchFileContentById(int id);
     List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two);
+    ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two);
     DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif);
     ReturnMessage saveFileToDb(FilesTable file);
     ReturnMessage saveFileContentToDb(FileContentTable fileContent);
