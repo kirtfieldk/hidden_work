@@ -7,7 +7,6 @@ import com.worklogger_differences.worklogger.tables.FilesTable;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 @Repository
 public interface DbManipluationInterface {
@@ -37,21 +36,23 @@ public interface DbManipluationInterface {
     }
     default RowMapper<DifferenceTable> mapDifferenceFromDb(){
         return (resultSet, i) -> {
-            int id = Integer.parseInt(resultSet.getString("difference_id"));
-            String fileId = resultSet.getString("file_id");
-            int idOne = Integer.parseInt(resultSet.getString("content_one_id"));
-            int idTwo = Integer.parseInt(resultSet.getString("content_two_id"));
-            String difference = resultSet.getString("differences");
-            return new DifferenceTable(id, fileId, idOne, idTwo,1,  difference);
+            DifferenceTable temp = new DifferenceTable();
+            temp.setId(Long.parseLong(resultSet.getString("difference_id")));
+            temp.setFileId(resultSet.getString("file_id"));
+            temp.setContentOne(Long.parseLong(resultSet.getString("content_one_id")));
+            temp.setContentTwo(Long.parseLong(resultSet.getString("content_two_id")));
+            temp.setDifferences(resultSet.getString("differences"));
+            return temp;
         };
     }
     default RowMapper<FileContentTable> mapContentFromDb(){
         return (resultSet, i) -> {
-            int contentId = Integer.parseInt(resultSet.getString("content_id"));
-            String fileId = resultSet.getString("file_id");
-            String content = resultSet.getString("content");
-            String pushed = resultSet.getString("pushed_at");
-            return new FileContentTable(contentId,fileId,content,pushed);
+            FileContentTable temp = new FileContentTable();
+            temp.setContentId(Long.parseLong(resultSet.getString("content_id")));
+            temp.setFileId(resultSet.getString("file_id"));
+            temp.setContent(resultSet.getString("content"));
+            temp.setPushedAt(resultSet.getString("pushed_at"));
+            return temp;
         };
     }
 

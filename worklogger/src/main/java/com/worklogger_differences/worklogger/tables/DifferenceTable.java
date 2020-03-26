@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 /*_______________________________________
@@ -12,34 +13,29 @@ import java.util.List;
  */
 @Entity
 @Table(name="differences")
-public class DifferenceTable {
+public class DifferenceTable  implements Serializable {
+    private static final long serialVersionUID = -2343243243242432341L;
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="difference_id")
-    private final int id;
+    private long id;
     @Column(name="file_id")
-    private final String fileId;
+    private String fileId;
     @Column(name="content_one_id")
-    private final int contentOne;
+    private long contentOne;
     @Column(name="content_two_id")
-    private final int contentTwo;
+    private long contentTwo;
     @Column(name="differences")
-    private final String differences;
+    private String differences;
     @Column(name="group_id")
-    private final int groupId;
+    private int groupId;
 
-    public DifferenceTable(){
-        this.contentOne=-1;
-        this.contentTwo=-2;
-        this.id=-1;
-        this.fileId=null;
-        this.differences=null;
-        this.groupId=-1;
-    }
+    public DifferenceTable(){}
 
-    public DifferenceTable(@JsonProperty("difference_id") int id,
+    public DifferenceTable(@JsonProperty("difference_id") long id,
                            @JsonProperty("file_id") String fileId,
-                           @JsonProperty("content_one_id")int contentOne,
-                           @JsonProperty("content_two_id") int contentTwo,
+                           @JsonProperty("content_one_id")long contentOne,
+                           @JsonProperty("content_two_id") long contentTwo,
                            @JsonProperty("group_id" )int groupId,
                            @JsonProperty("differences") String differences){
         this.id=id;
@@ -50,9 +46,31 @@ public class DifferenceTable {
         this.differences=differences;
     }
 
+    public void setFileId(String fileId) {
+        this.fileId = fileId;
+    }
 
+    public void setContentOne(long contentOne) {
+        this.contentOne = contentOne;
+    }
 
-    public int getId() {
+    public void setContentTwo(long contentTwo) {
+        this.contentTwo = contentTwo;
+    }
+
+    public void setDifferences(String differences) {
+        this.differences = differences;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
+    }
+
+    public long getId() {
         return id;
     }
 
@@ -60,11 +78,11 @@ public class DifferenceTable {
         return fileId;
     }
 
-    public int getContentOne() {
+    public long getContentOne() {
         return contentOne;
     }
 
-    public int getContentTwo() {
+    public long getContentTwo() {
         return contentTwo;
     }
 

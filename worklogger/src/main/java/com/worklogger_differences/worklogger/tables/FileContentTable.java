@@ -2,43 +2,57 @@ package com.worklogger_differences.worklogger.tables;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.io.Serializable;
+
 /*________________________________________________
   __contentId__|__fileId__|__content__|__timestamp
  */
 @Entity
 @Table(name="file_content")
-public class FileContentTable {
+public class FileContentTable implements Serializable {
+
+    private static final long serialVersionUID = -2343243243242432341L;
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="content_id")
-    private final int contentId;
+    private long contentId;
     @Column(name="file_id")
-    private final String fileId;
+    private String fileId;
     @Column(name="content")
-    private final String content;
+    private String content;
     @Column(name="pushed_at")
-    private final String pushedAt;
+    private String pushedAt;
     public FileContentTable(){
         super();
-        this.content=null;
-        this.contentId=-1;
-        this.fileId=null;
-        this.pushedAt=null;
     }
-    public FileContentTable(@JsonProperty("content_id") int contentId,
+    public FileContentTable(@JsonProperty("content_id") long id,
                             @JsonProperty("file_id") String fileId,
                             @JsonProperty("content") String content,
                             @JsonProperty("pushed_at") String pushedAt){
         this.pushedAt=pushedAt;
+        this.contentId = id;
         this.fileId=fileId;
-        this.contentId=contentId;
         this.content=content;
     }
 
-    public int getContentId() {
+    public void setFileId(String fileId) {
+        this.fileId = fileId;
+    }
+
+    public void setContentId(long contentId) {
+        this.contentId = contentId;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setPushedAt(String pushedAt) {
+        this.pushedAt = pushedAt;
+    }
+
+    public long getContentId() {
         return contentId;
     }
 

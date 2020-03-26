@@ -81,8 +81,13 @@ public class DbService implements DbManipluationInterface{
 
     @Override
     public DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif) {
-        return new DifferenceTable(1, fileOne.getFileId(), fileOne.getContentId(),
-                fileTwo.getContentId(), 2,  dif );
+        DifferenceTable temp = new DifferenceTable();
+        temp.setContentOne(fileOne.getContentId());
+        temp.setContentTwo(fileTwo.getContentId());
+        temp.setDifferences(dif);
+        temp.setFileId(fileOne.getFileId());
+        temp.setGroupId(2);
+        return temp;
     }
 
     @Override
