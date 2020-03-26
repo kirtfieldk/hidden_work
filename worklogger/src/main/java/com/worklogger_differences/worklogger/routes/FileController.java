@@ -1,9 +1,9 @@
 package com.worklogger_differences.worklogger.routes;
 
+import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
-import com.worklogger_differences.worklogger.tables.DifferenceTable;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
-import org.hibernate.engine.jdbc.spi.JdbcServices;
+import com.worklogger_differences.worklogger.tables.FilesTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,4 +24,15 @@ public class FileController {
         FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
         return dbService.findDifferenceBetweenTwoFiles(fileOne, fileTwo);
     }
+
+    @PostMapping
+    public ReturnMessage addFileToDb(@RequestBody FilesTable file){
+        if(dbService.fileInDb(file.getId()))
+            return dbService.saveFileToDb(file);
+        return new ReturnMessage("File already in db", 404);
+    }
+
+
+
+
 }

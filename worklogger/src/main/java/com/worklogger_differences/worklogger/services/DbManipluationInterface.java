@@ -16,11 +16,11 @@ public interface DbManipluationInterface {
     List<FilesTable> fetchAllFiles();
     FileContentTable fetchFileContentById(int id);
     List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two);
-    DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, List<String> dif);
+    DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif);
     ReturnMessage saveFileToDb(FilesTable file);
     ReturnMessage saveFileContentToDb(FileContentTable fileContent);
     ReturnMessage saveDiffToDb(DifferenceTable dif);
-
+    Boolean fileInDb(String fileId);
 /*
     Mapping a row into an
         object
@@ -40,10 +40,8 @@ public interface DbManipluationInterface {
             String fileId = resultSet.getString("file_id");
             int idOne = Integer.parseInt(resultSet.getString("content_one_id"));
             int idTwo = Integer.parseInt(resultSet.getString("content_two_id"));
-            List<String> difference = new ArrayList<String>(){{
-                add(resultSet.getString("differences"));
-            }};
-            return new DifferenceTable(id, fileId, idOne, idTwo, difference);
+            String difference = resultSet.getString("differences");
+            return new DifferenceTable(id, fileId, idOne, idTwo,1,  difference);
         };
     }
     default RowMapper<FileContentTable> mapContentFromDb(){

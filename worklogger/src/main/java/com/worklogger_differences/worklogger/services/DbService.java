@@ -7,6 +7,7 @@ import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.tables.DifferenceTable;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import com.worklogger_differences.worklogger.tables.FilesTable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +18,13 @@ import java.util.List;
 @Service
 public class DbService implements DbManipluationInterface{
     private final JdbcTemplate jdbc;
-    private final DifferenceRepository differenceRepository;
-    private final FileContentRepository fileContentRepository;
-    private final FileRepository fileRepository;
-    public DbService(JdbcTemplate jdbc, DifferenceRepository differenceRepository,
-                     FileContentRepository fileContentRepository, FileRepository fileRepository){
-        this.fileContentRepository=fileContentRepository;
-        this.differenceRepository=differenceRepository;
-        this.fileRepository=fileRepository;
+    @Autowired
+    private DifferenceRepository differenceRepository;
+    @Autowired
+    private FileContentRepository fileContentRepository;
+    @Autowired
+    private FileRepository fileRepository;
+    public DbService(JdbcTemplate jdbc){
         this.jdbc=jdbc;
     }
 
@@ -72,9 +72,9 @@ public class DbService implements DbManipluationInterface{
     }
 
     @Override
-    public DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, List<String> dif) {
-
-        return new DifferenceTable(1, fileOne.getFileId(), fileOne.getContentId(), fileTwo.getContentId(), dif );
+    public DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif) {
+        return new DifferenceTable(1, fileOne.getFileId(), fileOne.getContentId(),
+                fileTwo.getContentId(), 2,  dif );
     }
 
     @Override
@@ -93,5 +93,12 @@ public class DbService implements DbManipluationInterface{
     public ReturnMessage saveDiffToDb(DifferenceTable dif) {
         differenceRepository.save(dif);
         return new ReturnMessage("Diff noted: " + dif.getFileId(), 202);
+    }
+
+    @Override
+    public Boolean fileInDb(String fileId) {
+        String stm = "SELECT * FROM files WHERE file_id='"+fileId+"';";
+        List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
+        return files.isEmpty();
     }
 }

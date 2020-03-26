@@ -2,9 +2,7 @@ package com.worklogger_differences.worklogger.returnMessage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Entity;
 
-@Entity
 public class ReturnMessage {
     private final String message;
     private final int statusCode;

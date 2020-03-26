@@ -1,11 +1,9 @@
 package com.worklogger_differences.worklogger.tables;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.UniqueElements;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.List;
 
 /*_______________________________________
@@ -25,23 +23,28 @@ public class DifferenceTable {
     @Column(name="content_two_id")
     private final int contentTwo;
     @Column(name="differences")
-    private final List<String> differences;
+    private final String differences;
+    @Column(name="group_id")
+    private final int groupId;
     public DifferenceTable(){
         this.contentOne=-1;
         this.contentTwo=-2;
         this.id=-1;
         this.fileId=null;
         this.differences=null;
+        this.groupId=-1;
     }
 
     public DifferenceTable(@JsonProperty("difference_id") int id,
                            @JsonProperty("file_id") String fileId,
                            @JsonProperty("content_one_id")int contentOne,
                            @JsonProperty("content_two_id") int contentTwo,
-                           @JsonProperty("differences") List<String> differences){
+                           @JsonProperty("group_id" )int groupId,
+                           @JsonProperty("differences") String differences){
         this.id=id;
         this.fileId=fileId;
         this.contentTwo=contentTwo;
+        this.groupId=groupId;
         this.contentOne=contentOne;
         this.differences=differences;
     }
@@ -62,7 +65,7 @@ public class DifferenceTable {
         return contentTwo;
     }
 
-    public List<String> getDifferences() {
+    public String getDifferences() {
         return differences;
     }
 }
