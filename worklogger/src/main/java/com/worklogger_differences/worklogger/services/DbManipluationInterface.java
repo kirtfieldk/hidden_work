@@ -1,5 +1,7 @@
 package com.worklogger_differences.worklogger.services;
 
+import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
+import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.tables.DifferenceTable;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
@@ -10,17 +12,25 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface DbManipluationInterface {
+    /*
+        Response functions that call
+        the private methods
+     */
     List<FileContentTable> fetchAllFileContent();
     List<DifferenceTable> fetchAllDifferences();
     List<FilesTable> fetchAllFiles();
-    FileContentTable fetchFileContentById(int id);
-    List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two);
-    ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two);
+    FileContentTable fetchFileContentById(long id)
+            throws FileNotFoundInDbException;
+    List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two)
+            throws CompareDifferentFilesException;
+    ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
+            throws CompareDifferentFilesException;
     DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif);
     ReturnMessage saveFileToDb(FilesTable file);
     ReturnMessage saveFileContentToDb(FileContentTable fileContent);
     ReturnMessage saveDiffToDb(DifferenceTable dif);
     Boolean fileInDb(String fileId);
+    Boolean fileContentInDb(long id);
 /*
     Mapping a row into an
         object

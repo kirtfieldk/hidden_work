@@ -1,11 +1,14 @@
 package com.worklogger_differences.worklogger.routes;
 
+import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import com.worklogger_differences.worklogger.tables.FilesTable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,9 +23,14 @@ public class FileController {
     @GetMapping("{fileIdOne}/{fileIdTwo}")
     public List<String> getDif(@PathVariable("fileIdOne") int fileIdOne,
                                @PathVariable("fileIdTwo") int fileIdTwo){
-        FileContentTable fileOne = dbService.fetchFileContentById(fileIdOne);
-        FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
-        return dbService.findDifferenceBetweenTwoFiles(fileOne, fileTwo);
+        try {
+            FileContentTable fileOne = dbService.fetchFileContentById(fileIdOne);
+            FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
+            return dbService.findDifferenceBetweenTwoFiles(fileOne, fileTwo);
+        }catch(FileNotFoundInDbException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Id not in db", e);
+        }
+
     }
 /*
     Adds file to table

@@ -1,5 +1,7 @@
 package com.worklogger_differences.worklogger.services;
 
+import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
+import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.repository.DifferenceRepository;
 import com.worklogger_differences.worklogger.repository.FileContentRepository;
 import com.worklogger_differences.worklogger.repository.FileRepository;
@@ -47,16 +49,20 @@ public class DbService implements DbManipluationInterface{
     }
 
     @Override
-    public FileContentTable fetchFileContentById(int id) {
+    public FileContentTable fetchFileContentById(long id) throws FileNotFoundInDbException {
         String stm = "SELECT* FROM file_content where content_id="+id+";";
         List<FileContentTable> file = jdbc.query(stm, mapContentFromDb());
         if (!file.isEmpty())
             return file.get(0);
-        return null;
+        else
+            throw new FileNotFoundInDbException("File Contents not found in DB with id:" + id);
     }
 // TODO when a file is longer than another than add the excess to the dif
     @Override
-    public List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two) {
+    public List<String> findDifferenceBetweenTwoFiles
+    (FileContentTable one, FileContentTable two) throws CompareDifferentFilesException {
+        if(!one.getFileId().equals(two.getFileId()))
+            throw new CompareDifferentFilesException("Files are not historically the same");
         List<String> returnString = new ArrayList<String>();
         String[] fileOneLines = one.getContent().split("\n");
         String[] fileTwoLines = two.getContent().split("\n");
@@ -69,9 +75,15 @@ public class DbService implements DbManipluationInterface{
             }
         }
         return returnString;
+
     }
     @Override
-    public ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two){
+    public ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
+    throws CompareDifferentFilesException{
+        /////////////////ERROR//////////////////////
+        if(!one.getFileId().equals(two.getFileId()))
+            throw new CompareDifferentFilesException("Files are not historically the same");
+        ////////////////////////////////////////////////////////
         if(one.getFileId().equals(two.getFileId()))
             return new ReturnMessage("Difference between files", 202,
                     findDifferenceBetweenTwoFiles(one,two)
@@ -111,6 +123,13 @@ public class DbService implements DbManipluationInterface{
     @Override
     public Boolean fileInDb(String fileId) {
         String stm = "SELECT * FROM files WHERE file_id='"+fileId+"';";
+        List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
+        return !files.isEmpty();
+    }
+
+    @Override
+    public Boolean fileContentInDb(long id){
+        String stm = "SELECT * FROM file_content WHERE file_id="+id+";";
         List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
         return !files.isEmpty();
     }

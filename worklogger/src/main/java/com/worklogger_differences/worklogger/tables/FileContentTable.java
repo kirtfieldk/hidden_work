@@ -3,6 +3,8 @@ package com.worklogger_differences.worklogger.tables;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
 /*________________________________________________
@@ -18,18 +20,21 @@ public class FileContentTable implements Serializable {
     @Column(name="content_id")
     private long contentId;
     @Column(name="file_id")
+    @NotEmpty(message = "Must have a file ID")
     private String fileId;
     @Column(name="content")
+    @NotEmpty(message = "Must have a Content")
     private String content;
     @Column(name="pushed_at")
+    @NotEmpty(message = "Must have a Timestamp")
     private String pushedAt;
     public FileContentTable(){
         super();
     }
-    public FileContentTable(@JsonProperty("content_id") long id,
-                            @JsonProperty("file_id") String fileId,
-                            @JsonProperty("content") String content,
-                            @JsonProperty("pushed_at") String pushedAt){
+    public FileContentTable( @JsonProperty("content_id") long id,
+                             @JsonProperty("file_id") String fileId,
+                             @JsonProperty("content") String content,
+                             @JsonProperty("pushed_at") String pushedAt){
         this.pushedAt=pushedAt;
         this.contentId = id;
         this.fileId=fileId;

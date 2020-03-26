@@ -1,11 +1,17 @@
 package com.worklogger_differences.worklogger.routes;
 
+import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.RollbackException;
+import javax.validation.Valid;
+import java.util.InputMismatchException;
 import java.util.List;
 
 @RestController
@@ -21,11 +27,27 @@ public class ContentController {
         return dbService.fetchAllFileContent();
     }
     @GetMapping("/{id}")
-    public FileContentTable fetchContentWithId(@PathVariable("id") int id){
-        return dbService.fetchFileContentById(id);
-    }
+    public FileContentTable fetchContentWithId(@PathVariable("id") long id){
+        try {
+            return dbService.fetchFileContentById(id);
+        }catch (FileNotFoundInDbException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Not Found", e);
+        }
+        }
+
     @PostMapping
-    public ReturnMessage addContentToDb(@RequestBody FileContentTable file){
-        return dbService.saveFileContentToDb(file);
+    public ReturnMessage addContentToDb(@RequestBody FileContentTable file) {
+        try {
+            return dbService.saveFileContentToDb(file);
+        }catch (InputMismatchException | RollbackException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must be an instance of Content", e);
+        }
+        }
+    @PostMapping("/list")
+    public ReturnMessage addContentToDbArray(@Valid @RequestBody FileContentTable[] file){
+        for(FileContentTable x: file){
+            dbService.saveFileContentToDb(x);
+        }
+        return null;
     }
 }

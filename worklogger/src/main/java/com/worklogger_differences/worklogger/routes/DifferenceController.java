@@ -1,14 +1,17 @@
 package com.worklogger_differences.worklogger.routes;
 
+import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
 import com.worklogger_differences.worklogger.tables.DifferenceTable;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,6 +30,13 @@ public class DifferenceController {
     @GetMapping("/{fileOne}/{fileTwo}")
     public ReturnMessage differenceBetweenTwoFiles(@PathVariable("fileOne") FileContentTable fileOne,
                                                    @PathVariable("fileTwo") FileContentTable fileTwo){
-        return dbService.displayDifferenceBetweenFiles(fileOne, fileTwo);
-    }
+        try {
+            if (fileOne.getFileId().equals(fileTwo.getFileId()))
+                return dbService.displayDifferenceBetweenFiles(fileOne, fileTwo);
+            return new ReturnMessage("Files are not the same", 404);
+        }catch (CompareDifferentFilesException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Files are not historically the same", e);
+        }
+
+        }
 }

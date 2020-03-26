@@ -6,6 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 /*__________________________________________
     __id__|__filename__|__repo__|__project__
  */
@@ -15,25 +17,25 @@ import javax.persistence.Table;
 public class FilesTable {
     @Id
     @Column(name="file_id")
-    private final String id;
+    @NotEmpty(message = "Must have a file ID")
+    private String id;
     @Column(name="file_name")
-    private final String fileName;
+    @NotEmpty(message = "Must have a filename")
+    private String fileName;
     @Column(name="repository")
-    private final String repository;
+    @NotEmpty(message = "Must have a repository")
+    private String repository;
     @Column(name="project")
-    private final String project;
+    @NotEmpty(message = "Must have a project")
+    private String project;
 
     public FilesTable(){
         super();
-        this.id=null;
-        this.fileName=null;
-        this.repository=null;
-        this.project=null;
     }
     public FilesTable(@JsonProperty("id") String id,
-                      @JsonProperty("file_name") String fileName,
-                      @JsonProperty("repository") String repository,
-                      @JsonProperty("project") String project){
+                       @JsonProperty("file_name") String fileName,
+                       @JsonProperty("repository") String repository,
+                       @JsonProperty("project") String project){
         this.id=id;
         this.fileName=fileName;
         this.repository=repository;
