@@ -1,17 +1,12 @@
 package com.worklogger_differences.worklogger.services;
-
-import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
-import com.worklogger_differences.worklogger.routes.DeleteController;
 import com.worklogger_differences.worklogger.tables.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-
-import java.sql.ResultSet;
 import java.util.List;
 @Repository
 public interface DbManipluationInterface {
@@ -26,7 +21,7 @@ public interface DbManipluationInterface {
     /*
         Fetching entries by keys
      */
-    ResponseEntity<FilesTable> fetchFileById(String id)
+    FilesTable fetchFileById(String id)
             throws FileNotFoundInDbException;
     ResponseEntity<DifferenceTable> fetchDifById(long id)
             throws FileNotFoundInDbException;
@@ -37,18 +32,14 @@ public interface DbManipluationInterface {
     ResponseEntity<DeleteTable> fetchDeleteById(long id)
             throws FileNotFoundInDbException;
     //Return empty array if none existst//
-    List<DeleteTable> fetchAllDeleteForFileContentOld(long id);
-    List<DeleteTable> fetchAllDeleteForFileContentNew(long id);
-
+    List<DeleteTable> fetchAllDeleteForFileContent(long recent, long older);
+    List<InsertTable> fetchAllInsertForFile(long recent, long older);
     /*
         Creating differences
      */
     ResponseEntity<String> findDifferenceBetweenTwoFilesRecursive(String[] contentOne, String fileId,
                                                                   String[] contentTwo, long source,
                                                                   long dest, int index);
-    ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
-            throws CompareDifferentFilesException;
-    DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif);
     /*
         Saving Things to their tables
      */
@@ -107,9 +98,9 @@ public interface DbManipluationInterface {
             InsertTable insert = new InsertTable();
             insert.setInsertId(Long.parseLong(resultSet.getString("insertion_id")));
             insert.setFileId(resultSet.getString("file_id"));
-            insert.setNewId(Long.parseLong(resultSet.getString("new_file")));
+            insert.setNewId(Long.parseLong(resultSet.getString("destination")));
             insert.setIndex(Integer.parseInt(resultSet.getString("index")));
-            insert.setOldId(Long.parseLong(resultSet.getString("old_file")));
+            insert.setOldId(Long.parseLong(resultSet.getString("origin")));
             insert.setStringValue(resultSet.getString("string_value"));
             return insert;
         };
@@ -127,5 +118,8 @@ public interface DbManipluationInterface {
             return del;
         };
     }
+
+
+
 
 }

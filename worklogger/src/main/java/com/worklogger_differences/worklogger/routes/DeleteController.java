@@ -19,8 +19,6 @@ public class DeleteController {
     public DeleteController(DbService dbService){
         this.dbService=dbService;
     }
-
-
     @GetMapping
     public List<DeleteTable> fetchAllDelete(){
         return dbService.fetchAllDelete();
@@ -33,12 +31,12 @@ public class DeleteController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Not found with ID: " + id, e);
         }
     }
-    @GetMapping("/file/content/old/{id}")
-    public List<DeleteTable> fetchAllDeleteForFileContentOld(@PathVariable long id){
-      return dbService.fetchAllDeleteForFileContentOld(id);
+    @GetMapping("/file/content/{idOne}/{idTwo}")
+    public List<DeleteTable> fetchAllDeleteForFileContentOld(@PathVariable("idOne") long id,
+                                                             @PathVariable("idTwo") long idTwo){
+        long recent = Math.max(id, idTwo);
+        long older = Math.min(id, idTwo);
+        return dbService.fetchAllDeleteForFileContent(recent, older);
     }
-    @GetMapping("/file/content/new/{id}")
-    public List<DeleteTable> fetchAllDeleteForFileContentNew(@PathVariable long id){
-        return dbService.fetchAllDeleteForFileContentNew(id);
-    }
+
 }

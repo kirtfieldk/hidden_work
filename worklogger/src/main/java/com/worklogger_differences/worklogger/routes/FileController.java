@@ -20,22 +20,11 @@ public class FileController {
     public FileController(DbService dbService){
         this.dbService=dbService;
     }
-//    @GetMapping("{fileIdOne}/{fileIdTwo}")
-//    public List<String> getDif(@PathVariable("fileIdOne") int fileIdOne,
-//                               @PathVariable("fileIdTwo") int fileIdTwo){
-//        try {
-//            FileContentTable fileOne = dbService.fetchFileContentById(fileIdOne);
-//            FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
-//            return dbService.findDifferenceBetweenTwoFilesRecursive(fileOne, fileTwo);
-//        }catch(FileNotFoundInDbException | CompareDifferentFilesException e){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Id not in db", e);
-//        }
-//
-//    }
     @GetMapping("id/{id}")
     public ResponseEntity<FilesTable> fetchFileById(@PathVariable("id") String id){
         try{
-            return dbService.fetchFileById(id);
+            FilesTable file = dbService.fetchFileById(id);
+            return new ResponseEntity<FilesTable>(file, HttpStatus.OK);
         }catch (FileNotFoundInDbException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"File Id not in Database: " + id, e );
         }

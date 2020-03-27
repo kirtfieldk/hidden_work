@@ -63,11 +63,11 @@ public class DbService implements DbManipluationInterface{
     }
 
     @Override
-    public ResponseEntity<FilesTable> fetchFileById(String id) throws FileNotFoundInDbException {
+    public FilesTable fetchFileById(String id) throws FileNotFoundInDbException {
         String stm = "SELECT * FROM files where file_id = '"+id+"';";
         List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
         if(!files.isEmpty())
-            return new ResponseEntity<FilesTable>(files.get(0), HttpStatus.OK);
+            return files.get(0);
         throw new FileNotFoundInDbException("No file found");
 
     }
@@ -110,14 +110,16 @@ public class DbService implements DbManipluationInterface{
     }
 
     @Override
-    public List<DeleteTable> fetchAllDeleteForFileContentOld(long id) {
-        String stm = "SELECT * FROM deletion where old_id = "+id;
+    public List<DeleteTable> fetchAllDeleteForFileContent(long recent, long older) {
+        String stm = "SELECT * FROM deletion where origin = "+older+" and destination =" + recent+";";
         return jdbc.query(stm, mapDeleteFromDb());
     }
-    public List<DeleteTable> fetchAllDeleteForFileContentNew(long id){
-        String stm = "SELECT * FROM deletion where old_id = "+id;
-        return jdbc.query(stm, mapDeleteFromDb());
+    @Override
+    public List<InsertTable> fetchAllInsertForFile(long recent, long older){
+        String stm = "SELECT * FROM insertion where origin = "+recent+" and destination =" + older+";";
+        return jdbc.query(stm, mapInsertFromDb());
     }
+
     @Override
     public ResponseEntity<String> findDifferenceBetweenTwoFilesRecursive(String[] latest, String fileId,
                                                                          String[] oldest, long source, long dest,
@@ -143,29 +145,6 @@ public class DbService implements DbManipluationInterface{
             saveInsertToDb(in);
         }
         return findDifferenceBetweenTwoFilesRecursive(latest, fileId, oldest, source, dest, index+=1);
-    }
-    @Override
-    public ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
-    throws CompareDifferentFilesException{
-        return null;
-//        /////////////////ERROR//////////////////////
-//        if(!one.getFileId().equals(two.getFileId()))
-//            throw new CompareDifferentFilesException("Files are not historically the same");
-//        ////////////////////////////////////////////////////////
-//        return new ReturnMessage("Difference between files", 202,
-//                    findDifferenceBetweenTwoFiles(one,two));
-    }
-
-    @Override
-    public DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif) {
-        DifferenceTable temp = new DifferenceTable();
-        temp.setContentOne(fileOne.getContentId());
-        temp.setContentTwo(fileTwo.getContentId());
-        temp.setDifferences(dif);
-        temp.setFileId(fileOne.getFileId());
-        temp.setGroupId(2);
-        differenceRepository.save(temp);
-        return temp;
     }
 
     @Override

@@ -1,18 +1,17 @@
 package com.worklogger_differences.worklogger.routes;
 
-import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
+import com.worklogger_differences.worklogger.difference.DifferenceMessage;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
-import com.worklogger_differences.worklogger.tables.DifferenceTable;
-import com.worklogger_differences.worklogger.tables.FileContentTable;
+import com.worklogger_differences.worklogger.tables.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.crypto.spec.PSource;
+
 import java.util.List;
 
 @RestController
@@ -31,15 +30,7 @@ public class DifferenceController {
     //Create multiple difference object between the two files
     //and displays an arrayList through ResponseMessage
     //Also it saves the difference into the db
-    @PostMapping()
-    public ReturnMessage differenceBetweenTwoFiles(@RequestBody List<FileContentTable> files){
-        try {
-            return dbService.displayDifferenceBetweenFiles(files.get(0), files.get(1));
-        }catch (CompareDifferentFilesException e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Files are not historically the same", e);
-        }
-    }
-    @GetMapping("/id/{fileOneId}/{fileTwoId}")
+    @GetMapping("/id/create/{fileOneId}/{fileTwoId}")
     public ResponseEntity<ReturnMessage> differenceBetweenTwoFiles(@PathVariable("fileOneId") long fileOneId,
                                                    @PathVariable("fileTwoId") long fileTwoId){
         try {
@@ -54,18 +45,36 @@ public class DifferenceController {
                      source =  f2;
                      dest = f1;
                 }
-                dbService.findDifferenceBetweenTwoFilesRecursive(dest.getContent().split("\n"),
+                dbService.findDifferenceBetweenTwoFilesRecursive(
+                        dest.getContent().split("\n"),
                         f1.getFileId(),
                         source.getContent().split("\n"),
                         source.getContentId(),
                         dest.getContentId() ,0);
-
                 return new ResponseEntity<ReturnMessage>(new ReturnMessage("Success adding "+
                         "differences", 202), HttpStatus.OK);
         }catch ( FileNotFoundInDbException e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Files are not historically the same", e);
         }
     }
+    @GetMapping("/id/fetch/{fileIdOne}/{fileIdTwo}")
+    public ResponseEntity<DifferenceMessage> fetchDifference(@PathVariable("fileIdOne") long fileIdOne,
+                                                             @PathVariable("fileIdTwo") long fileIdTwo){
+        try {
+            long recentFileContentId = Math.max(fileIdOne, fileIdTwo);
+            long oldFileContentId = Math.min(fileIdOne, fileIdTwo);
+            FileContentTable recentFile = dbService.fetchFileContentById(recentFileContentId);
+            FileContentTable oldFile = dbService.fetchFileContentById(oldFileContentId);
+            FilesTable file = dbService.fetchFileById(recentFile.getFileId());
+            List<InsertTable> insertions = dbService.fetchAllInsertForFile(recentFileContentId, oldFileContentId);
+            List<DeleteTable> deletes = dbService.fetchAllDeleteForFileContent(recentFileContentId, oldFileContentId);
+            DifferenceMessage dif = new DifferenceMessage(file, oldFile, recentFile, insertions, deletes);
+            return new ResponseEntity<DifferenceMessage>(dif, HttpStatus.OK);
+        }catch(FileNotFoundInDbException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Files not found", e);
+        }
+    }
+
     @GetMapping(path = "/{id}")
     public ResponseEntity<DifferenceTable> fetchDiffById(@PathVariable("id") long id){
         try{
@@ -74,6 +83,4 @@ public class DifferenceController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No File with ID: " + id, e);
         }
     }
-
-
 }
