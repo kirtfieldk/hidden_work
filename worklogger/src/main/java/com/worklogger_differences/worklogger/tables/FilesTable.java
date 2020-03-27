@@ -32,7 +32,7 @@ public class FilesTable {
     public FilesTable(){
         super();
     }
-    public FilesTable(@JsonProperty("id") String id,
+    public FilesTable(@JsonProperty("file_id") String id,
                        @JsonProperty("file_name") String fileName,
                        @JsonProperty("repository") String repository,
                        @JsonProperty("project") String project){

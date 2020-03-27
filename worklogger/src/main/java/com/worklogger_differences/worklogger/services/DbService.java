@@ -1,6 +1,7 @@
 package com.worklogger_differences.worklogger.services;
 
 import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
+import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.repository.DifferenceRepository;
@@ -11,11 +12,15 @@ import com.worklogger_differences.worklogger.tables.DifferenceTable;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import com.worklogger_differences.worklogger.tables.FilesTable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -47,6 +52,25 @@ public class DbService implements DbManipluationInterface{
     public List<FilesTable> fetchAllFiles() {
         String stm = "SELECT * FROM files;";
         return jdbc.query(stm, mapFilesFromDb());
+    }
+
+    @Override
+    public ResponseEntity<FilesTable> fetchFileById(String id) throws FileNotFoundInDbException {
+        String stm = "SELECT * FROM files where file_id = '"+id+"';";
+        List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
+        if(!files.isEmpty())
+            return new ResponseEntity<FilesTable>(files.get(0), HttpStatus.OK);
+        throw new FileNotFoundInDbException("No file found");
+
+    }
+
+    @Override
+    public ResponseEntity<DifferenceTable> fetchDifById(long id) throws FileNotFoundInDbException {
+        String stm = "SELECT * FROM differences WHERE difference_id =" + id+";";
+        List<DifferenceTable> dif = jdbc.query(stm, mapDifferenceFromDb());
+        if(!dif.isEmpty())
+            return new ResponseEntity<DifferenceTable>(dif.get(0), HttpStatus.OK);
+        else throw new FileNotFoundInDbException("No File found with id: "+id);
     }
 
     @Override
@@ -109,26 +133,28 @@ public class DbService implements DbManipluationInterface{
     }
 
     @Override
-    public ReturnMessage saveFileToDb(FilesTable file) throws MissingParamsException {
-        if(file.getFileName().equals(null) || file.getId().equals(null) || file.getProject().equals(null)
-            || file.getRepository().equals(null))
-            throw new MissingParamsException("Invalid File Object");
+    public ResponseEntity<ReturnMessage> saveFileToDb(FilesTable file) throws FileAlreadyInDb {
+        if(fileInDb(file.getId()))
+            throw new FileAlreadyInDb("File already in DB");
         fileRepository.save(file);
-        return new ReturnMessage("Added: " +file.getFileName(), 202);
+        ReturnMessage res = new ReturnMessage("Added: " +file.getFileName(), 202);
+        return new ResponseEntity<ReturnMessage>(res, HttpStatus.OK);
     }
 
     @Override
-    public ReturnMessage saveFileContentToDb(FileContentTable fileContent) throws MissingParamsException{
-        if(fileContent.getFileId().equals(null) || fileContent.getContent().equals(null))
-            throw new MissingParamsException("Invalid FileContent Object");
+    public ResponseEntity<ReturnMessage> saveFileContentToDb(FileContentTable fileContent) throws FileNotFoundInDbException{
+        if(!fileInDb(fileContent.getFileId()))
+            throw new FileNotFoundInDbException("Invalid FileContent Object");
         fileContentRepository.save(fileContent);
-        return new ReturnMessage("Added: " +fileContent.getFileId(), 202);
+        ReturnMessage res = new ReturnMessage("Added: " +fileContent.getFileId(), 202);
+        return new ResponseEntity<ReturnMessage>(res, HttpStatus.OK);
     }
 
     @Override
-    public ReturnMessage saveDiffToDb(DifferenceTable dif){
+    public ResponseEntity<ReturnMessage> saveDiffToDb(DifferenceTable dif){
         differenceRepository.save(dif);
-        return new ReturnMessage("Diff noted: " + dif.getFileId(), 202);
+        ReturnMessage response = new ReturnMessage("Diff noted: " + dif.getFileId(), 202);
+        return new ResponseEntity<ReturnMessage>(response, HttpStatus.OK);
     }
 
     @Override
@@ -144,4 +170,26 @@ public class DbService implements DbManipluationInterface{
         List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
         return !files.isEmpty();
     }
+
+    @Override
+    public ResponseEntity<ReturnMessage> saveManyFilesToDb(List<FilesTable> files) throws FileAlreadyInDb{
+
+        List<FilesTable> newList = files.stream().filter(file-> fileInDb(file.getId())).collect(Collectors.toList());
+        if(!newList.isEmpty())
+            throw new FileAlreadyInDb("Files Already in db");
+        fileRepository.saveAll(files);
+        ReturnMessage res = new ReturnMessage("Saved all to Db", 202);
+        return new ResponseEntity<ReturnMessage>(res, HttpStatus.OK);
+    }
+    @Override
+    public ResponseEntity<ReturnMessage> saveManyFileContentToDb(List<FileContentTable> files) throws FileNotFoundInDbException{
+        List<FileContentTable> newList =
+                files.stream().filter(file-> fileInDb(file.getFileId())).collect(Collectors.toList());
+        if(newList.isEmpty())
+            throw new FileNotFoundInDbException("Files Already in db");
+        fileContentRepository.saveAll(files);
+        ReturnMessage res = new ReturnMessage("Saved all to Db", 202);
+        return new ResponseEntity<ReturnMessage>(res, HttpStatus.OK);
+    }
+
 }

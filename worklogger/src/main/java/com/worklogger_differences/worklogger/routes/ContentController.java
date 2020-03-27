@@ -1,12 +1,12 @@
 package com.worklogger_differences.worklogger.routes;
 
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
-import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,22 +35,21 @@ public class ContentController {
         }
 
     @PostMapping
-    public ReturnMessage addContentToDb(@RequestBody FileContentTable file) {
+    public ResponseEntity<ReturnMessage> addContentToDb(@RequestBody FileContentTable file) {
         try {
             return dbService.saveFileContentToDb(file);
-        }catch (MissingParamsException e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must be an instance of Content", e);
+        }catch (FileNotFoundInDbException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File not found with file ID: " + file.getFileId(), e);
         }
         }
+
     @PostMapping("/list")
-    public ReturnMessage addContentToDbArray(@Valid @RequestBody FileContentTable[] file){
+    public ResponseEntity<ReturnMessage> addContentToDb(@Valid @RequestBody List<FileContentTable> file){
         try {
-            for (FileContentTable x : file) {
-                dbService.saveFileContentToDb(x);
-            }
-        }catch (MissingParamsException e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must be an instance of Content", e);
+            return dbService.saveManyFileContentToDb(file);
+
+        }catch (FileNotFoundInDbException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Some Files are not in DB", e);
         }
-        return null;
     }
 }

@@ -1,14 +1,18 @@
 package com.worklogger_differences.worklogger.services;
 
 import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
+import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.tables.DifferenceTable;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import com.worklogger_differences.worklogger.tables.FilesTable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 @Repository
@@ -20,6 +24,10 @@ public interface DbManipluationInterface {
     List<FileContentTable> fetchAllFileContent();
     List<DifferenceTable> fetchAllDifferences();
     List<FilesTable> fetchAllFiles();
+    ResponseEntity<FilesTable> fetchFileById(String id)
+            throws FileNotFoundInDbException;
+    ResponseEntity<DifferenceTable> fetchDifById(long id)
+            throws FileNotFoundInDbException;
     FileContentTable fetchFileContentById(long id)
             throws FileNotFoundInDbException;
     List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two)
@@ -27,11 +35,16 @@ public interface DbManipluationInterface {
     ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
             throws CompareDifferentFilesException;
     DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif);
-    ReturnMessage saveFileToDb(FilesTable file)
-            throws MissingParamsException;
-    ReturnMessage saveFileContentToDb(FileContentTable fileContent)
-            throws MissingParamsException;
-    ReturnMessage saveDiffToDb(DifferenceTable diff);
+    ResponseEntity<ReturnMessage> saveFileToDb(FilesTable file)
+            throws FileAlreadyInDb;
+    ResponseEntity<ReturnMessage> saveFileContentToDb(FileContentTable fileContent)
+            throws FileNotFoundInDbException;
+    ResponseEntity<ReturnMessage> saveDiffToDb(DifferenceTable diff);
+    ResponseEntity<ReturnMessage> saveManyFilesToDb(List<FilesTable> files)
+            throws FileAlreadyInDb;
+    ResponseEntity<ReturnMessage> saveManyFileContentToDb(List<FileContentTable> files)
+            throws FileNotFoundInDbException;
+
     Boolean fileInDb(String fileId);
     Boolean fileContentInDb(long id);
 /*

@@ -1,14 +1,15 @@
 package com.worklogger_differences.worklogger.routes;
 
 import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
+import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
-import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
 import com.worklogger_differences.worklogger.tables.FileContentTable;
 import com.worklogger_differences.worklogger.tables.FilesTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,19 +35,35 @@ public class FileController {
         }
 
     }
+    @GetMapping("id/{id}")
+    public ResponseEntity<FilesTable> fetchFileById(@PathVariable("id") String id){
+        try{
+            return dbService.fetchFileById(id);
+        }catch (FileNotFoundInDbException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"File Id not in Database: " + id, e );
+        }
+    }
 /*
     Adds file to table
  */
     @PostMapping
-    public ReturnMessage addFileToDb(@RequestBody FilesTable file){
+    public ResponseEntity<ReturnMessage> addFileToDb(@RequestBody FilesTable file){
         try {
-            if (!dbService.fileInDb(file.getId()))
-                return dbService.saveFileToDb(file);
-            return new ReturnMessage("File already in db", 404);
-        }catch (MissingParamsException e){
+            return dbService.saveFileToDb(file);
+        }catch (FileAlreadyInDb e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid File object", e);
         }
         }
+    @PostMapping("/list")
+    public ResponseEntity<ReturnMessage> addListOfFilesToDb(@RequestBody List<FilesTable> files){
+        try {
+            return dbService.saveManyFilesToDb(files);
+        }catch (FileAlreadyInDb e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Some Files already in DD", e);
+        }
+
+        }
+
     /*
         Fetch All files
      */
