@@ -1,11 +1,8 @@
 package com.worklogger_differences.worklogger.routes;
-
-import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
 import com.worklogger_differences.worklogger.services.DbService;
-import com.worklogger_differences.worklogger.tables.FileContentTable;
 import com.worklogger_differences.worklogger.tables.FilesTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,18 +20,18 @@ public class FileController {
     public FileController(DbService dbService){
         this.dbService=dbService;
     }
-    @GetMapping("{fileIdOne}/{fileIdTwo}")
-    public List<String> getDif(@PathVariable("fileIdOne") int fileIdOne,
-                               @PathVariable("fileIdTwo") int fileIdTwo){
-        try {
-            FileContentTable fileOne = dbService.fetchFileContentById(fileIdOne);
-            FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
-            return dbService.findDifferenceBetweenTwoFiles(fileOne, fileTwo);
-        }catch(FileNotFoundInDbException | CompareDifferentFilesException e){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Id not in db", e);
-        }
-
-    }
+//    @GetMapping("{fileIdOne}/{fileIdTwo}")
+//    public List<String> getDif(@PathVariable("fileIdOne") int fileIdOne,
+//                               @PathVariable("fileIdTwo") int fileIdTwo){
+//        try {
+//            FileContentTable fileOne = dbService.fetchFileContentById(fileIdOne);
+//            FileContentTable fileTwo = dbService.fetchFileContentById(fileIdTwo);
+//            return dbService.findDifferenceBetweenTwoFilesRecursive(fileOne, fileTwo);
+//        }catch(FileNotFoundInDbException | CompareDifferentFilesException e){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Id not in db", e);
+//        }
+//
+//    }
     @GetMapping("id/{id}")
     public ResponseEntity<FilesTable> fetchFileById(@PathVariable("id") String id){
         try{

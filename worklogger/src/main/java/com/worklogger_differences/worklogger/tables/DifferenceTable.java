@@ -1,12 +1,9 @@
 package com.worklogger_differences.worklogger.tables;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.List;
-
 /*_______________________________________
   __differenceId__|__fileId__|__fileCOntentId__|__fileContent2Id__|__differences__
 

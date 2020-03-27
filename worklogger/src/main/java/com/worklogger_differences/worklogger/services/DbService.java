@@ -3,22 +3,14 @@ package com.worklogger_differences.worklogger.services;
 import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
-import com.worklogger_differences.worklogger.exception.MissingParamsException;
-import com.worklogger_differences.worklogger.repository.DifferenceRepository;
-import com.worklogger_differences.worklogger.repository.FileContentRepository;
-import com.worklogger_differences.worklogger.repository.FileRepository;
+import com.worklogger_differences.worklogger.repository.*;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
-import com.worklogger_differences.worklogger.tables.DifferenceTable;
-import com.worklogger_differences.worklogger.tables.FileContentTable;
-import com.worklogger_differences.worklogger.tables.FilesTable;
+import com.worklogger_differences.worklogger.tables.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +24,10 @@ public class DbService implements DbManipluationInterface{
     private FileContentRepository fileContentRepository;
     @Autowired
     private FileRepository fileRepository;
+    @Autowired
+    private DeleteRepository deleteRepository;
+    @Autowired
+    private InsertRepository insertRepository;
     public DbService(JdbcTemplate jdbc){
         this.jdbc=jdbc;
     }
@@ -55,6 +51,18 @@ public class DbService implements DbManipluationInterface{
     }
 
     @Override
+    public List<DeleteTable> fetchAllDelete() {
+        String stm = "SELECT * FROM deletion;";
+        return jdbc.query(stm, mapDeleteFromDb());
+    }
+
+    @Override
+    public List<InsertTable> fetchAllInsert() {
+        String stm = "SELECT * FROM insertion;";
+        return jdbc.query(stm, mapInsertFromDb());
+    }
+
+    @Override
     public ResponseEntity<FilesTable> fetchFileById(String id) throws FileNotFoundInDbException {
         String stm = "SELECT * FROM files where file_id = '"+id+"';";
         List<FilesTable> files = jdbc.query(stm, mapFilesFromDb());
@@ -75,7 +83,7 @@ public class DbService implements DbManipluationInterface{
 
     @Override
     public FileContentTable fetchFileContentById(long id) throws FileNotFoundInDbException {
-        String stm = "SELECT* FROM file_content where content_id="+id+";";
+        String stm = "SELECT * FROM file_content where content_id="+id+";";
         List<FileContentTable> file = jdbc.query(stm, mapContentFromDb());
         if (!file.isEmpty())
             return file.get(0);
@@ -84,40 +92,68 @@ public class DbService implements DbManipluationInterface{
     }
 
     @Override
-    public List<String> findDifferenceBetweenTwoFiles
-    (FileContentTable one, FileContentTable two) throws CompareDifferentFilesException {
-        if(!one.getFileId().equals(two.getFileId()))
-            throw new CompareDifferentFilesException("Files are not historically the same");
-        List<String> returnString = new ArrayList<String>();
-        String[] fileOneLines = one.getContent().split("\n");
-        String[] fileTwoLines = two.getContent().split("\n");
-        int minLength = fileOneLines.length;
-        String[] maxSizeArray = fileTwoLines.clone();
-        if (minLength > fileTwoLines.length)
-            maxSizeArray = fileOneLines.clone();
-            minLength = fileTwoLines.length;
-        //This adds the difference between files//
-        for(int i = 0; i < minLength; i++){
-            if(!fileOneLines[i].trim().equals(fileTwoLines[i].trim()) && fileOneLines.length != 0){
-                returnString.add(fileOneLines[i]);
-            }
-        }
-        //This add the excess of the larger file//
-        for(int j = minLength; j < maxSizeArray.length; j++){
-            returnString.add(maxSizeArray[j]);
-        }
-        return returnString;
+    public ResponseEntity<InsertTable> fetchInsertById(long id) throws FileNotFoundInDbException{
+        String stm = "SELECT * FROM insertion where insertion_id="+id+";";
+        List<InsertTable> insert = jdbc.query(stm, mapInsertFromDb());
+        if(!insert.isEmpty())
+            return new ResponseEntity<InsertTable>(insert.get(0), HttpStatus.OK);
+        throw new FileNotFoundInDbException("File Not Found with id: "+id);
+    }
 
+    @Override
+    public ResponseEntity<DeleteTable> fetchDeleteById(long id) throws FileNotFoundInDbException {
+        String stm = "SELECT * FROM deletion where delete_id ="+id;
+        List<DeleteTable> del = jdbc.query(stm, mapDeleteFromDb());
+        if(!del.isEmpty())
+            return new ResponseEntity<DeleteTable>(del.get(0), HttpStatus.OK);
+        throw new FileNotFoundInDbException("File Not Found with id: "+id);
+    }
+
+    @Override
+    public List<DeleteTable> fetchAllDeleteForFileContentOld(long id) {
+        String stm = "SELECT * FROM deletion where old_id = "+id;
+        return jdbc.query(stm, mapDeleteFromDb());
+    }
+    public List<DeleteTable> fetchAllDeleteForFileContentNew(long id){
+        String stm = "SELECT * FROM deletion where old_id = "+id;
+        return jdbc.query(stm, mapDeleteFromDb());
+    }
+    @Override
+    public ResponseEntity<String> findDifferenceBetweenTwoFilesRecursive(String[] latest, String fileId,
+                                                                         String[] oldest, long source, long dest,
+                                                                         int index) {
+        if(index >= latest.length || index >= oldest.length) {
+            if(latest.length > oldest.length){
+                for(int i = index; i < latest.length; i++){
+                    InsertTable in = InsertTable.addTraitsToInsert(fileId,dest,source,i, latest[i]);
+                    saveInsertToDb(in);
+                }
+            }else if(oldest.length >latest.length){
+                for(int i = index; i < oldest.length; i++){
+                    DeleteTable in = DeleteTable.addTraitsToDel(fileId,source,dest,i, oldest[i]);
+                    saveDeleteToDb(in);
+                }
+            }
+            return new ResponseEntity<String>("Finish", HttpStatus.OK);
+        }
+        if(!latest[index].trim().equals(oldest[index].trim())){
+            DeleteTable del = DeleteTable.addTraitsToDel(fileId,source,dest,index, oldest[index]);
+            InsertTable in = InsertTable.addTraitsToInsert(fileId,dest,source,index, latest[index]);
+            saveDeleteToDb(del);
+            saveInsertToDb(in);
+        }
+        return findDifferenceBetweenTwoFilesRecursive(latest, fileId, oldest, source, dest, index+=1);
     }
     @Override
     public ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
     throws CompareDifferentFilesException{
-        /////////////////ERROR//////////////////////
-        if(!one.getFileId().equals(two.getFileId()))
-            throw new CompareDifferentFilesException("Files are not historically the same");
-        ////////////////////////////////////////////////////////
-        return new ReturnMessage("Difference between files", 202,
-                    findDifferenceBetweenTwoFiles(one,two));
+        return null;
+//        /////////////////ERROR//////////////////////
+//        if(!one.getFileId().equals(two.getFileId()))
+//            throw new CompareDifferentFilesException("Files are not historically the same");
+//        ////////////////////////////////////////////////////////
+//        return new ReturnMessage("Difference between files", 202,
+//                    findDifferenceBetweenTwoFiles(one,two));
     }
 
     @Override
@@ -191,5 +227,13 @@ public class DbService implements DbManipluationInterface{
         ReturnMessage res = new ReturnMessage("Saved all to Db", 202);
         return new ResponseEntity<ReturnMessage>(res, HttpStatus.OK);
     }
-
+    @Override
+    public ResponseEntity<DeleteTable> saveDeleteToDb(DeleteTable del){
+        deleteRepository.save(del);
+        return new ResponseEntity<DeleteTable>(del, HttpStatus.OK);
+    }
+    public ResponseEntity<InsertTable> saveInsertToDb(InsertTable insert){
+        insertRepository.save(insert);
+        return new ResponseEntity<InsertTable>(insert, HttpStatus.OK);
+    }
 }

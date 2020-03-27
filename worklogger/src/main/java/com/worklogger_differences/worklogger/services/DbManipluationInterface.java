@@ -3,38 +3,55 @@ package com.worklogger_differences.worklogger.services;
 import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
-import com.worklogger_differences.worklogger.exception.MissingParamsException;
 import com.worklogger_differences.worklogger.returnMessage.ReturnMessage;
-import com.worklogger_differences.worklogger.tables.DifferenceTable;
-import com.worklogger_differences.worklogger.tables.FileContentTable;
-import com.worklogger_differences.worklogger.tables.FilesTable;
+import com.worklogger_differences.worklogger.routes.DeleteController;
+import com.worklogger_differences.worklogger.tables.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
+
+import java.sql.ResultSet;
 import java.util.List;
 @Repository
 public interface DbManipluationInterface {
     /*
-        Response functions that call
-        the private methods
+        The Fetch ALl Methods
      */
     List<FileContentTable> fetchAllFileContent();
     List<DifferenceTable> fetchAllDifferences();
     List<FilesTable> fetchAllFiles();
+    List<DeleteTable> fetchAllDelete();
+    List<InsertTable> fetchAllInsert();
+    /*
+        Fetching entries by keys
+     */
     ResponseEntity<FilesTable> fetchFileById(String id)
             throws FileNotFoundInDbException;
     ResponseEntity<DifferenceTable> fetchDifById(long id)
             throws FileNotFoundInDbException;
     FileContentTable fetchFileContentById(long id)
             throws FileNotFoundInDbException;
-    List<String> findDifferenceBetweenTwoFiles(FileContentTable one, FileContentTable two)
-            throws CompareDifferentFilesException;
+    ResponseEntity<InsertTable> fetchInsertById(long id)
+            throws FileNotFoundInDbException;
+    ResponseEntity<DeleteTable> fetchDeleteById(long id)
+            throws FileNotFoundInDbException;
+    //Return empty array if none existst//
+    List<DeleteTable> fetchAllDeleteForFileContentOld(long id);
+    List<DeleteTable> fetchAllDeleteForFileContentNew(long id);
+
+    /*
+        Creating differences
+     */
+    ResponseEntity<String> findDifferenceBetweenTwoFilesRecursive(String[] contentOne, String fileId,
+                                                                  String[] contentTwo, long source,
+                                                                  long dest, int index);
     ReturnMessage displayDifferenceBetweenFiles(FileContentTable one, FileContentTable two)
             throws CompareDifferentFilesException;
     DifferenceTable createDifferenceObject(FileContentTable fileOne, FileContentTable fileTwo, String dif);
+    /*
+        Saving Things to their tables
+     */
     ResponseEntity<ReturnMessage> saveFileToDb(FilesTable file)
             throws FileAlreadyInDb;
     ResponseEntity<ReturnMessage> saveFileContentToDb(FileContentTable fileContent)
@@ -44,7 +61,11 @@ public interface DbManipluationInterface {
             throws FileAlreadyInDb;
     ResponseEntity<ReturnMessage> saveManyFileContentToDb(List<FileContentTable> files)
             throws FileNotFoundInDbException;
-
+    ResponseEntity<DeleteTable> saveDeleteToDb(DeleteTable del);
+    ResponseEntity<InsertTable> saveInsertToDb(InsertTable insert);
+    /*
+        Error Handling
+     */
     Boolean fileInDb(String fileId);
     Boolean fileContentInDb(long id);
 /*
@@ -81,6 +102,30 @@ public interface DbManipluationInterface {
             return temp;
         };
     }
+    default RowMapper<InsertTable> mapInsertFromDb(){
+        return (resultSet, i) -> {
+            InsertTable insert = new InsertTable();
+            insert.setInsertId(Long.parseLong(resultSet.getString("insertion_id")));
+            insert.setFileId(resultSet.getString("file_id"));
+            insert.setNewId(Long.parseLong(resultSet.getString("new_file")));
+            insert.setIndex(Integer.parseInt(resultSet.getString("index")));
+            insert.setOldId(Long.parseLong(resultSet.getString("old_file")));
+            insert.setStringValue(resultSet.getString("string_value"));
+            return insert;
+        };
+    }
 
+    default RowMapper<DeleteTable> mapDeleteFromDb(){
+        return (resultSet, i) -> {
+            DeleteTable del = new DeleteTable();
+            del.setDeleteId(Long.parseLong(resultSet.getString("delete_id")));
+            del.setFileId(resultSet.getString("file_id"));
+            del.setNewId(Long.parseLong(resultSet.getString("destination")));
+            del.setIndex(Integer.parseInt(resultSet.getString("index")));
+            del.setOldId(Long.parseLong(resultSet.getString("origin")));
+            del.setStringValue(resultSet.getString("string_value"));
+            return del;
+        };
+    }
 
 }
