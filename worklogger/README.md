@@ -46,3 +46,13 @@ To get the full difference with all the appropriate information
 use:
 
 `api/v1/differences/id/fetch/<id1>/<id2>`
+
+
+# TODO
+
+Implement gRPC to com with db_feeder
+
+Implement Timestamps
+
+Test
+
