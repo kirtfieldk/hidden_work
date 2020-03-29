@@ -1,6 +1,5 @@
 package com.worklogger_differences.worklogger.services;
 
-import com.worklogger_differences.worklogger.exception.CompareDifferentFilesException;
 import com.worklogger_differences.worklogger.exception.FileAlreadyInDb;
 import com.worklogger_differences.worklogger.exception.FileNotFoundInDbException;
 import com.worklogger_differences.worklogger.repository.*;
@@ -19,8 +18,6 @@ import java.util.stream.Collectors;
 public class DbService implements DbManipluationInterface{
     private final JdbcTemplate jdbc;
     @Autowired
-    private DifferenceRepository differenceRepository;
-    @Autowired
     private FileContentRepository fileContentRepository;
     @Autowired
     private FileRepository fileRepository;
@@ -38,11 +35,6 @@ public class DbService implements DbManipluationInterface{
         return jdbc.query(stm, mapContentFromDb());
     }
 
-    @Override
-    public List<DifferenceTable> fetchAllDifferences() {
-        String stm = "SELECT * FROM differences;";
-        return jdbc.query(stm, mapDifferenceFromDb());
-    }
 
     @Override
     public List<FilesTable> fetchAllFiles() {
@@ -70,15 +62,6 @@ public class DbService implements DbManipluationInterface{
             return files.get(0);
         throw new FileNotFoundInDbException("No file found");
 
-    }
-
-    @Override
-    public ResponseEntity<DifferenceTable> fetchDifById(long id) throws FileNotFoundInDbException {
-        String stm = "SELECT * FROM differences WHERE difference_id =" + id+";";
-        List<DifferenceTable> dif = jdbc.query(stm, mapDifferenceFromDb());
-        if(!dif.isEmpty())
-            return new ResponseEntity<DifferenceTable>(dif.get(0), HttpStatus.OK);
-        else throw new FileNotFoundInDbException("No File found with id: "+id);
     }
 
     @Override
@@ -146,7 +129,6 @@ public class DbService implements DbManipluationInterface{
         }
         return findDifferenceBetweenTwoFilesRecursive(latest, fileId, oldest, source, dest, index+=1);
     }
-
     @Override
     public ResponseEntity<ReturnMessage> saveFileToDb(FilesTable file) throws FileAlreadyInDb {
         if(fileInDb(file.getId()))
@@ -165,12 +147,6 @@ public class DbService implements DbManipluationInterface{
         return new ResponseEntity<ReturnMessage>(res, HttpStatus.OK);
     }
 
-    @Override
-    public ResponseEntity<ReturnMessage> saveDiffToDb(DifferenceTable dif){
-        differenceRepository.save(dif);
-        ReturnMessage response = new ReturnMessage("Diff noted: " + dif.getFileId(), 202);
-        return new ResponseEntity<ReturnMessage>(response, HttpStatus.OK);
-    }
 
     @Override
     public Boolean fileInDb(String fileId) {

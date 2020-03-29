@@ -22,10 +22,6 @@ public class DifferenceController {
     public DifferenceController(DbService dbService){
         this.dbService=dbService;
     }
-    @GetMapping
-    public List<DifferenceTable> fetchAllDifference(){
-        return dbService.fetchAllDifferences();
-    }
 
     //Create multiple difference object between the two files
     //and displays an arrayList through ResponseMessage
@@ -75,12 +71,4 @@ public class DifferenceController {
         }
     }
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<DifferenceTable> fetchDiffById(@PathVariable("id") long id){
-        try{
-            return dbService.fetchDifById(id);
-        }catch (FileNotFoundInDbException e){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No File with ID: " + id, e);
-        }
-    }
 }

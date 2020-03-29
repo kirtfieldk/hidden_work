@@ -14,7 +14,6 @@ public interface DbManipluationInterface {
         The Fetch ALl Methods
      */
     List<FileContentTable> fetchAllFileContent();
-    List<DifferenceTable> fetchAllDifferences();
     List<FilesTable> fetchAllFiles();
     List<DeleteTable> fetchAllDelete();
     List<InsertTable> fetchAllInsert();
@@ -22,8 +21,6 @@ public interface DbManipluationInterface {
         Fetching entries by keys
      */
     FilesTable fetchFileById(String id)
-            throws FileNotFoundInDbException;
-    ResponseEntity<DifferenceTable> fetchDifById(long id)
             throws FileNotFoundInDbException;
     FileContentTable fetchFileContentById(long id)
             throws FileNotFoundInDbException;
@@ -47,7 +44,6 @@ public interface DbManipluationInterface {
             throws FileAlreadyInDb;
     ResponseEntity<ReturnMessage> saveFileContentToDb(FileContentTable fileContent)
             throws FileNotFoundInDbException;
-    ResponseEntity<ReturnMessage> saveDiffToDb(DifferenceTable diff);
     ResponseEntity<ReturnMessage> saveManyFilesToDb(List<FilesTable> files)
             throws FileAlreadyInDb;
     ResponseEntity<ReturnMessage> saveManyFileContentToDb(List<FileContentTable> files)
@@ -70,17 +66,6 @@ public interface DbManipluationInterface {
             String repository = resultSet.getString("repository");
             String project = resultSet.getString("repository");
             return new FilesTable(id, fileName, repository,project);
-        };
-    }
-    default RowMapper<DifferenceTable> mapDifferenceFromDb(){
-        return (resultSet, i) -> {
-            DifferenceTable temp = new DifferenceTable();
-            temp.setId(Long.parseLong(resultSet.getString("difference_id")));
-            temp.setFileId(resultSet.getString("file_id"));
-            temp.setContentOne(Long.parseLong(resultSet.getString("content_one_id")));
-            temp.setContentTwo(Long.parseLong(resultSet.getString("content_two_id")));
-            temp.setDifferences(resultSet.getString("differences"));
-            return temp;
         };
     }
     default RowMapper<FileContentTable> mapContentFromDb(){
