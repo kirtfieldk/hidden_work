@@ -16,7 +16,7 @@ export const FETCH_ALL_PROJECT = "FETCH_ALL_PROJECT";
 export const FETCH_ALL_REPO_NAME = "FETCH_ALL_REPO_NAME";
 export const FETCH_STATS_CURRENT_WEEK = "FETCH_STATS_CURRENT_WEEK";
 export const USER_COMMITS_CURRENT_WEEK = "USER_COMMITS_CURRENT_WEEK";
-export const FETCH_COMMITS = "FETCH_COMMITS";
+export const FETCH_USER_COMMITS = "FETCH_USER_COMMITS";
 export const FETCH_STATS_WEEK = "FETCH_STATS_WEEK";
 export const FETCH_STATS_FOR_REPO_CURRENT_WEEK =
   "FETCH_STATS_FOR_REPO_CURRENT_WEEK";
@@ -38,7 +38,7 @@ export const FETCH_ALL_COMMITS_IN_REPO = "FETCH_ALL_COMMITS_IN_REPO";
 export const RESET_FETCH_FULL_COMMIT_INFO = "RESET_FETCH_FULL_COMMIT_INFO";
 
 export interface fetchUserCommitWeek {
-  type: typeof FETCH_COMMITS;
+  type: typeof FETCH_USER_COMMITS;
   commits: UserCommitsWeek[];
 }
 export interface fetchUser {
@@ -47,7 +47,7 @@ export interface fetchUser {
 }
 export interface allCommitsInRepo {
   type: typeof FETCH_ALL_COMMITS_IN_REPO;
-  commits: CommitFullRepo;
+  commits: CommitFullRepo[];
 }
 export interface fetchStatsUserWeek {
   type: typeof FETCH_STATS_USER;
@@ -65,3 +65,20 @@ export interface fetchReposWorkedOn {
   type: typeof REPOS_WORK_WEEK;
   data: ReposWorkedOn[];
 }
+/* These all affect a specific reducer */
+export type UserCommitActionType = fetchUserCommitWeek;
+export type UserActionType = fetchUser;
+export type CommitsInRepoActionType = allCommitsInRepo;
+export type UserStatsActionType = fetchStatsUserWeek;
+export type LifecycleActionType = fetchLifecycleRepo;
+export type UserPercentActionType = fetchUserPercentWeek;
+export type ReposWordedOnActionType = fetchReposWorkedOn;
+/* All actions in app */
+export type AppActions =
+  | UserCommitActionType
+  | UserActionType
+  | CommitsInRepoActionType
+  | UserStatsActionType
+  | LifecycleActionType
+  | UserPercentActionType
+  | ReposWordedOnActionType;
