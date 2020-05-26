@@ -8,6 +8,7 @@ import { StatsUserInWeek } from "./StatsUserInWeek";
 import { LifecycleRepo } from "./LifeCycleRepo";
 import { UserPercentWeek } from "./UserPercentWeek";
 import { ReposWorkedOn } from "./ReposWorkedOn";
+import { AllUsersPercentWeek } from "./AllUsersPercentWeek";
 export const dbFeederUrl = "http://localhost:8080/api/v1";
 
 export const FETCH_BRANCHES_IN_REPO = "FETCH_BRANCHES_IN_REPO";
@@ -25,6 +26,8 @@ export const FETCH_COMMITS_FOR_REPO_CURRENT_WEEK =
 export const FETCH_STATS_USER_CURRENT_WEEK = "FETCH_STATS_USER_CURRENT_WEEK";
 export const FETCH_STATS_USER = "FETCH_STATS_USER";
 export const LIFE_REPO_BRANCH = "LIFE_REPO_BRANCH";
+export const RESET_LIFE_REPO_BRANCH = "RESET_LIFE_REPO_BRANCH";
+
 export const ALL_USER_PERCENT = "ALL_USER_PERCENT";
 export const ALL_USER_PERCENT_CURRENT_WEEK = "ALL_USER_PERCENT_CURRENT_WEEK";
 export const FETCH_RECENT_COMMIT = "FETCH_RECENT_COMMIT";
@@ -45,6 +48,10 @@ export interface fetchUser {
   type: typeof FETCH_USER;
   user: User;
 }
+export interface fetchAllUsers {
+  type: typeof FETCH_ALL_USERS;
+  data: User[];
+}
 export interface allCommitsInRepo {
   type: typeof FETCH_ALL_COMMITS_IN_REPO;
   commits: CommitFullRepo[];
@@ -55,7 +62,11 @@ export interface fetchStatsUserWeek {
 }
 export interface fetchLifecycleRepo {
   type: typeof LIFE_REPO_BRANCH;
-  data: LifecycleRepo;
+  data: LifecycleRepo[];
+}
+export interface resetFetchLifecycleRepo {
+  type: typeof RESET_LIFE_REPO_BRANCH;
+  data: LifecycleRepo[];
 }
 export interface fetchUserPercentWeek {
   type: typeof ALL_USER_PERCENT;
@@ -65,14 +76,20 @@ export interface fetchReposWorkedOn {
   type: typeof REPOS_WORK_WEEK;
   data: ReposWorkedOn[];
 }
+export interface fetchAllUsersCommits {
+  type: typeof ALL_USER_PERCENT;
+  data: AllUsersPercentWeek[];
+}
 /* These all affect a specific reducer */
 export type UserCommitActionType = fetchUserCommitWeek;
 export type UserActionType = fetchUser;
 export type CommitsInRepoActionType = allCommitsInRepo;
 export type UserStatsActionType = fetchStatsUserWeek;
-export type LifecycleActionType = fetchLifecycleRepo;
+export type LifecycleActionType = fetchLifecycleRepo | resetFetchLifecycleRepo;
 export type UserPercentActionType = fetchUserPercentWeek;
 export type ReposWordedOnActionType = fetchReposWorkedOn;
+export type AllUsersCommitsWeekActionType = fetchAllUsersCommits;
+export type AllUsersActionType = fetchAllUsers;
 /* All actions in app */
 export type AppActions =
   | UserCommitActionType
@@ -80,5 +97,7 @@ export type AppActions =
   | CommitsInRepoActionType
   | UserStatsActionType
   | LifecycleActionType
+  | AllUsersActionType
   | UserPercentActionType
+  | AllUsersCommitsWeekActionType
   | ReposWordedOnActionType;
