@@ -8,7 +8,7 @@ const defaultState: LifecycleRepo[] = [
   {
     author: "",
     branch: "",
-    stats: [
+    stat: [
       {
         insert: 0,
         delete: 0,
@@ -26,7 +26,7 @@ const lifecycleReducer = (
 ): LifecycleRepo[] => {
   switch (action.type) {
     case LIFE_REPO_BRANCH:
-      if (action.data.length === 0) return state;
+      if (action.data) return state;
       /* It has fetched Something from the API */ else
         return [...state, action.data];
     case RESET_LIFE_REPO_BRANCH:

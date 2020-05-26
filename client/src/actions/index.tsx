@@ -7,6 +7,7 @@ import {
   FETCH_STATS_USER,
   LIFE_REPO_BRANCH,
   RESET_LIFE_REPO_BRANCH,
+  ALL_USER_PERCENT,
 } from "../types/actions";
 import axios from "axios";
 import { Dispatch } from "redux";
@@ -23,7 +24,7 @@ export const fetchAllUsers = () => {
 export const fetchStatsForUser = (author: string, week: string) => {
   return async (dispatch: Dispatch) => {
     const res = await axios.get(
-      `${URL}/numberCruncher/stats/author/${author}/week/${week}`
+      `${URL}/numberCruncher/stats/author/${author}/week/${week}/`
     );
     return dispatch({ type: FETCH_STATS_USER, data: res.data });
   };
@@ -32,7 +33,7 @@ export const fetchStatsForUser = (author: string, week: string) => {
 export const fetchLifecycleRepoBranch = (repoId: number) => {
   return async (dispatch: Dispatch) => {
     const res = await axios.get(
-      `${URL}/repositories/stats/lifecycle/repository/${repoId}`
+      `${URL}/repositories/stats/lifecycle/repository/${repoId}/`
     );
     return dispatch({ type: LIFE_REPO_BRANCH, data: res.data });
   };
@@ -41,4 +42,12 @@ export const fetchLifecycleRepoBranch = (repoId: number) => {
 export const resetFetchLifecycleRepoBranch = () => {
   return (dispatch: Dispatch) =>
     dispatch({ type: RESET_LIFE_REPO_BRANCH, data: [] });
+};
+
+/* Fetch all user percent commiyts in week */
+export const fetchAllUserPercent = (week: String) => {
+  return async (dispatch: Dispatch) => {
+    const res = await axios.get(`${URL}/userpercent/week/${week}/`);
+    dispatch({ type: ALL_USER_PERCENT, data: res.data });
+  };
 };

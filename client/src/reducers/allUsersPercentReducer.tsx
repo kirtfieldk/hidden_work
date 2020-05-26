@@ -3,7 +3,12 @@ import {
   AllUsersCommitsWeekActionType,
   ALL_USER_PERCENT,
 } from "../types/actions";
-const defaultState: AllUsersPercentWeek[] = [];
+const defaultState: AllUsersPercentWeek[] = [
+  {
+    user: "",
+    percent: 0,
+  },
+];
 
 const allUsersPercentReducer = (
   state = defaultState,

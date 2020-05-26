@@ -62,15 +62,15 @@ export interface fetchStatsUserWeek {
 }
 export interface fetchLifecycleRepo {
   type: typeof LIFE_REPO_BRANCH;
-  data: LifecycleRepo[];
+  data: LifecycleRepo;
 }
 export interface resetFetchLifecycleRepo {
   type: typeof RESET_LIFE_REPO_BRANCH;
-  data: LifecycleRepo[];
+  data: LifecycleRepo;
 }
 export interface fetchUserPercentWeek {
   type: typeof ALL_USER_PERCENT;
-  data: UserPercentWeek;
+  data: UserPercentWeek[];
 }
 export interface fetchReposWorkedOn {
   type: typeof REPOS_WORK_WEEK;
