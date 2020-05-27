@@ -20,9 +20,8 @@ const UserPercent: React.FC<props> = ({
         On init of render We will fetch all User percents based on if the route is for a specific 
         week or not and set the fetched data to 
     */
-  console.log(match.params.week);
   useEffect(() => {
-    // fetchUserPercent(mathedRoute.÷);
+    fetchUserPercent(match.params.week);
   }, []);
   return <div> Hl</div>;
 };

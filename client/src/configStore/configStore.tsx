@@ -13,15 +13,25 @@ import { workedOnReposReducer } from "../reducers/reposWorkedOnReducer";
 import { statsUserWeekReducer } from "../reducers/statsUserWeekReeducer";
 import { userCommitWeekReducer } from "../reducers/userCommitsWeekReducer";
 import { allUsersReducer } from "../reducers/allUsersReducer";
+import { branchesInRepoReducer } from "../reducers/branchesInRepoReducer";
+import { fullCommitReducer } from "../reducers/fullCommitsReducer";
+import { userCommitsInWeekReducer } from "../reducers/userCommitsInWeekReducer";
+import { distinctReposWorkedOnWeekReducer } from "../reducers/distinctReposWorkedOnWeek";
+import { allReposReducer } from "../reducers/allReposReducer";
 export const rootReducer = combineReducers({
   userReducer,
   allUsersPercentReducer,
   commitsInRepoReducer,
   lifecycleReducer,
   workedOnReposReducer,
+  branchesInRepoReducer,
+  allReposReducer,
   statsUserWeekReducer,
   userCommitWeekReducer,
   allUsersReducer,
+  fullCommitReducer,
+  distinctReposWorkedOnWeekReducer,
+  userCommitsInWeekReducer,
 });
 export type AppState = ReturnType<typeof rootReducer>;
 export const store = createStore(

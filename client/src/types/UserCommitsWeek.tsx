@@ -3,7 +3,7 @@ export interface UserCommitsWeek {
   insert: number;
   delete: number;
   commits: string;
-  repository: String;
+  repository: string;
   repository_id: number;
   branch: string;
   author: string;

@@ -8,6 +8,8 @@ const defaultState: LifecycleRepo[] = [
   {
     author: "",
     branch: "",
+    repository: "",
+    repositroy_id: 0,
     stat: [
       {
         insert: 0,

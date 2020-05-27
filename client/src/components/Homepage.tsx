@@ -17,8 +17,8 @@ const Homepage: React.FC<Props> = ({ users, fetchAllUsersH }) => {
     return users.map((el) => {
       console.log(el);
       return (
-        <div key={el.Name}>
-          {el.Name}: {el.User_id}
+        <div key={el.name}>
+          {el.name}: {el.user_id}
         </div>
       );
     });
