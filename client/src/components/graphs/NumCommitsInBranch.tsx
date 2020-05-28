@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import axios from "axios";
-import * as type from "../../config/configVariables";
 import { Line } from "react-chartjs-2";
 import { AppState } from "../../configStore/configStore";
 import { BranchesInRepo } from "../../types/BranchesInRepo";
@@ -26,11 +25,12 @@ const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
         setBranch(branchesInRepo);
       } else {
         const res = await axios.get(
-          `${type.dbFeederUrl}/branch/repository/${repoId}/`
+          `http://localhost:8080/branch/repository/${repoId}/`
         );
         setBranch(res.data);
       }
     };
+
     fetcher();
   }, [branchesInRepo]);
   const compare = (a: simplePoints, b: simplePoints) => {

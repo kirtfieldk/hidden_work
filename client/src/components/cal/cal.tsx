@@ -29,13 +29,12 @@ const Cal: React.FC<props> = ({ user, currentDate, reset }) => {
           value={date.year}
           placeholder="YYYY"
           onChange={(e) => {
-            e.target.value.length <= 4
-              ? setDate({
-                  year: e.target.value,
-                  month: date.month,
-                  day: date.day,
-                })
-              : null;
+            if (e.target.value.length <= 4)
+              setDate({
+                year: e.target.value,
+                month: date.month,
+                day: date.day,
+              });
           }}
         />
         /
@@ -44,13 +43,12 @@ const Cal: React.FC<props> = ({ user, currentDate, reset }) => {
           value={date.month}
           placeholder="MM"
           onChange={(e) => {
-            e.target.value.length <= 2
-              ? setDate({
-                  year: date.year,
-                  month: e.target.value,
-                  day: date.day,
-                })
-              : null;
+            if (e.target.value.length <= 2)
+              setDate({
+                year: date.year,
+                month: e.target.value,
+                day: date.day,
+              });
           }}
         />
         /
@@ -59,13 +57,12 @@ const Cal: React.FC<props> = ({ user, currentDate, reset }) => {
           value={date.day}
           placeholder="DD"
           onChange={(e) => {
-            e.target.value.length <= 2
-              ? setDate({
-                  year: date.year,
-                  month: date.month,
-                  day: e.target.value,
-                })
-              : null;
+            if (e.target.value.length <= 2)
+              setDate({
+                year: date.year,
+                month: date.month,
+                day: e.target.value,
+              });
           }}
         />
         <div className="border-2 mx-4 border-deepPrimary px-5 text-center bg-primarycolor text-white hover:bg-black">

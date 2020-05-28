@@ -89,7 +89,7 @@ const UserPage: React.FC<props> = ({
           <div className=" col-start-1 row-auto">{rendermanylineGraphs()}</div>
         </div>
         <div className="col-start-7 row-auto mx-4 col-end-13">
-          <WorkOnRepos user={match.params.user} week={match.params.week} />
+          <WorkOnRepos />
         </div>
       </div>
     );

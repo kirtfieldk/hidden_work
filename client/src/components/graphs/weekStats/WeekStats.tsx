@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import WeekStatGraph from "./WeekStatGraph";
-import UserPercents from "./UserPercents";
+import UserPercent from "./UserPercent";
 import ListWorkedRepos from "../../list/ListWorkedRepos";
 import LoadingPage from "../../loadingPage/LoadingPage";
 import Cal from "../../cal/cal";
@@ -32,8 +32,12 @@ const WeekStats: React.FC<props> = ({ match, weekStats, fetchStatsWeek }) => {
             </div>
             <Cal currentDate={match.params.week} />
             <div className="flex flex-wrap">
-              <WeekStatGraph className="flex-1" match={match.params.week} />
-              <UserPercents className="flex-1" match={match.params.week} />
+              <div className="flex-1">
+                <WeekStatGraph />
+              </div>
+              <div className="flex-1">
+                <UserPercent week={match.params.week} />
+              </div>
             </div>
           </div>
           <ListWorkedRepos week={match.params.week} />

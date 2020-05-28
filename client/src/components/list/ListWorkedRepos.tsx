@@ -7,20 +7,21 @@ import { ReposWorkedOn } from "../../types/ReposWorkedOn";
 import { ThunkDispatch } from "redux-thunk";
 import { AppActions } from "../../types/actions";
 import { bindActionCreators } from "redux";
-import { RouteComponentProps } from "react-router-dom";
 
-type props = linkStateToProps & LinkDispatchProps & urlWeek;
-interface urlWeek extends RouteComponentProps<{ week: string }> {}
+type props = linkStateToProps & LinkDispatchProps & passedFromParent;
+interface passedFromParent {
+  week: string;
+}
 const ListWorkedRepos: React.FC<props> = ({
-  match,
+  week,
   fetchAllDistinctReposWorkedOn,
   reposWorkedOnWeek,
 }) => {
   useEffect(() => {
-    if (match.params.week) {
-      fetchAllDistinctReposWorkedOn(match.params.week);
+    if (week) {
+      fetchAllDistinctReposWorkedOn(week);
     }
-  }, [match.params.week]);
+  }, [week]);
   const renderWorkedOnRepos = () => {
     if (reposWorkedOnWeek.length > 0) {
       return reposWorkedOnWeek.map((el) => {
@@ -66,4 +67,4 @@ const mapDispatchToProps = (
 const mapStateToProps = (state: AppState) => {
   return { reposWorkedOnWeek: state.distinctReposWorkedOnWeekReducer };
 };
-export default connect(mapStateToProps, actions)(ListWorkedRepos);
+export default connect(mapStateToProps, mapDispatchToProps)(ListWorkedRepos);

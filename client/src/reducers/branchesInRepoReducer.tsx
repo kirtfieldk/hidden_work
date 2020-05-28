@@ -21,6 +21,7 @@ const defaultState: BranchesInRepo[] = [
         parent_commit: "",
         committer_id: "",
         repositoryId: 0,
+        data: 0,
       },
     ],
   },
