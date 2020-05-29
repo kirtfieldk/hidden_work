@@ -14,6 +14,7 @@ interface simplePoints {
   value: number;
   branch: string;
 }
+
 const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
   /*
         Upon init render we fetch the branches in the repo along with all the commits 
@@ -21,18 +22,19 @@ const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
   const [branchRepo, setBranch] = useState(branchesInRepo);
   useEffect(() => {
     const fetcher = async () => {
-      if (branchesInRepo.length > 0) {
+      if (branchesInRepo[0].branch !== "") {
         setBranch(branchesInRepo);
       } else {
         const res = await axios.get(
-          `http://localhost:8080/branch/repository/${repoId}/`
+          `http://localhost:8080/api/v1/branch/repository/${repoId}/`
         );
         setBranch(res.data);
       }
     };
 
     fetcher();
-  }, [branchesInRepo]);
+  }, [branchesInRepo, repoId]);
+
   const compare = (a: simplePoints, b: simplePoints) => {
     if (a.xPoint > b.xPoint) return -1;
     if (a.xPoint > b.xPoint) return -1;
@@ -42,9 +44,14 @@ const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
     const labels: string[] = [];
     dataGraph.map((el) =>
       el.sort(compare).map((e) => {
-        /*  Remove dupes */
-        if (labels.filter((k) => k !== e.xPoint).length > 0)
-          labels.push(e.xPoint);
+        /*  Remove dupes in string array for easy Sort */
+        const le = labels.filter((k) => k === e.xPoint);
+        if (le.length === 0) {
+          /* If not in label Array */
+          return labels.push(e.xPoint);
+        }
+
+        /* Place those values Into a dateAndCommits struct */
       })
     );
     return {
@@ -56,6 +63,7 @@ const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
   };
   /* For multiple lines in the line graph we need to map over the branches and plot their points */
   const setDataset = (data: simplePoints[], labels: string[]) => {
+    console.log(data);
     return {
       label: data[0].branch,
       fill: false,
@@ -67,34 +75,48 @@ const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
       /* we plot that value else we plot a Zero */
       data: labels.sort().map((el) => {
         const res = data.filter((e) => e.xPoint === el);
-        if (res.length > 0) {
+        if (res[0]) {
           return res[0].value;
         } else return 0;
       }),
     };
   };
-  /* Parses the time into YYYY-MM-DD ~ignores the hour and minutes 
-    Than reduce the array so that multiple commits on the same day do not affect 
+  /* Parses the time into YYYY-MM-DD ~ignores the hour and minutes
+    Than reduce the array so that multiple commits on the same day do not affect
     the line graph
   */
-  const parseData = (data: BranchesInRepo) => {
+  const parseData = (data: BranchesInRepo): Commits[] => {
     const reduceArr: Commits[] = [];
+    /* Removes min/hour/sec of timestamp */
+
     data.commits.map(
       (com) => (com.committed_at = com.committed_at.split(" ")[0])
     );
+    // /* Populate the data property of commit object */
+
     data.commits.map((el) => {
-      el.data = data.commits.filter(
-        (commit) => !el.data && el.committed_at === commit.committed_at
-      ).length;
-    });
-    data.commits.map((el) => {
-      if (
-        reduceArr.filter((e) => e.committed_at === el.committed_at).length === 0
-      )
+      /* Array of all commits on the same day same branch */
+      const filteredCommits: Commits[] = reduceArr.filter(
+        (commit) => commit.committed_at === el.committed_at
+      );
+      /* If this date is not in the reducedArr */
+      if (filteredCommits.length === 0) {
         reduceArr.push(el);
+      } else {
+        /*
+            if it is already In the reduced Array we Need to find each entry
+            in the Original data.commit and place that value into the
+            reducedArr.data = length
+          */
+        reduceArr.map((reduce) => {
+          if (reduce.committed_at === el.committed_at)
+            return (reduce.data = data.commits.filter(
+              (com) => com.committed_at === el.committed_at
+            ).length);
+        });
+      }
     });
-    data.commits = reduceArr;
-    return data;
+    return reduceArr;
   };
   /*
     For a Line graph to be made we need an array of labels [X_AXIS]
@@ -106,18 +128,19 @@ const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
   ): simplePoints[] => {
     const graphData: simplePoints[] = [];
     data.forEach((el) => {
-      graphData.push({ xPoint: el.committed_at, value: el.data, branch });
+      graphData.push({ xPoint: el.committed_at, value: el.data | 0, branch });
     });
     return graphData;
   };
 
-  /* Main func that renders the Line graph for the num of ccommits in a repo Branch */
-  /* Need to merge all branches into one  */
+  // /* Main func that renders the Line graph for the num of ccommits in a repo Branch */
+  // /* Need to merge all branches into one  */
   const renderLineGraphCommits = () => {
     let graphData: simplePoints[][] = [];
     if (branchRepo.length > 0) {
       branchRepo.forEach((branch) => {
-        branch = parseData(branch);
+        const temp: Commits[] = parseData(branch);
+        branch.commits = temp.slice();
         graphData = [
           ...graphData,
           formateDataForGraph(branch.branch, branch.commits),
@@ -125,7 +148,7 @@ const NumCommitsInBranches: React.FC<props> = ({ branchesInRepo, repoId }) => {
       });
       return (
         <Line
-          key={branchRepo[1].repository_id}
+          key={branchRepo[0].branch_id}
           data={setStats(graphData)}
           options={{
             title: {
